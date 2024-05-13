@@ -13,7 +13,8 @@ import javax.swing.table.DefaultTableModel;
  * @author bosie
  */
 public class PaginaBusquedaProductos extends javax.swing.JFrame {
-static final String DB_URL = "jdbc:mysql://localhost/proyecto";
+
+    static final String DB_URL = "jdbc:mysql://localhost/proyecto";
     static String USER = "root";
     static String PASS = "";
 
@@ -21,9 +22,9 @@ static final String DB_URL = "jdbc:mysql://localhost/proyecto";
     Connection conexion = null;
     PreparedStatement ps = null;
     ResultSet rs = null;
-    
+
     DefaultTableModel mt = new DefaultTableModel();
-    
+
     /**
      * Creates new form PaginaBusquedaProductos
      */
@@ -31,16 +32,17 @@ static final String DB_URL = "jdbc:mysql://localhost/proyecto";
         initComponents();
         this.setLocationRelativeTo(null);
         establecerConexion();
-       mt = new DefaultTableModel();
-    mt.addColumn("NOMBRE_PRODUCTO");
-    mt.addColumn("FORMATO");
-    mt.addColumn("LOCALIZACION");
 
-    jTable2.setModel(mt);
+        mt = new DefaultTableModel();
+        mt.addColumn("ID_PRODUCTO");
+        mt.addColumn("NOMBRE_PRODUCTO");
+        mt.addColumn("LOCALIZACION");
+        mt.addColumn("STOCK MIN");
+
+        jTable2.setModel(mt);
     }
-    
-    // Método para establecer la conexión con la base de datos
-   private void establecerConexion() {
+        // Método para establecer la conexión con la base de datos
+    private void establecerConexion() {
         try {
             conexion = DriverManager.getConnection(DB_URL, USER, PASS);
         } catch (SQLException ex) {
@@ -52,44 +54,39 @@ static final String DB_URL = "jdbc:mysql://localhost/proyecto";
     // Método para buscar productos por nombre
     private void buscarProductosPorNombre(String nombre) {
         try {
-            // Definir la consulta SQL para buscar productos por nombre
-            String consulta = "SELECT * FROM PRODUCTO WHERE NOMBRE_PRODUCTO = ?";
-            
-            // Preparar la declaración SQL
-            PreparedStatement declaracion = conexion.prepareStatement(consulta);
-            
-            // Establecer el parámetro de búsqueda
-            declaracion.setString(1, "%" + nombre + "%");
-            
-            // Ejecutar la consulta
-            ResultSet resultado = declaracion.executeQuery();
-        
-        // Limpiar el modelo de la tabla antes de agregar nuevos datos
-        mt.setRowCount(0);
-        
-        // Procesar los resultados y agregarlos al modelo de la tabla
-        while (resultado.next()) {
-            String nombreProducto = resultado.getString("NOMBRE_PRODUCTO");
-             String formato = resultado.getString("FORMATO");
-            String localizacion = resultado.getString("LOCALIZACION");
-            
-            
-            // Crear un arreglo de objetos para almacenar los datos de la fila
-            Object[] fila = {nombreProducto,formato, localizacion};
-            
-            // Agregar la fila al modelo de la tabla
-            mt.addRow(fila);
+            String query = "SELECT ID_PRODUCTO, NOMBRE_PRODUCTO, LOCALIZACION, STOCK_MIN FROM PRODUCTO WHERE NOMBRE_PRODUCTO LIKE ?";
+            ps = conexion.prepareStatement(query);
+            ps.setString(1, "%" + nombre + "%");
+            rs = ps.executeQuery();
+
+            // Limpiar la tabla antes de agregar nuevos datos
+            mt.setRowCount(0);
+
+            // Iterar a través de los resultados y agregarlos a la tabla
+            while (rs.next()) {
+                String idProducto = rs.getString("ID_PRODUCTO");
+                String nombreProducto = rs.getString("NOMBRE_PRODUCTO");
+                String localizacion = rs.getString("LOCALIZACION");
+                int stockMin = rs.getInt("STOCK_MIN");
+                mt.addRow(new Object[]{idProducto, nombreProducto, localizacion, stockMin});
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error al buscar productos en la base de datos.");
+        } finally {
+            // Cerrar recursos
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (ps != null) {
+                    ps.close();
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
         }
-        
-        // Cerrar la conexión y liberar recursos
-        resultado.close();
-        declaracion.close();
-    } catch (SQLException ex) {
-        // Manejar cualquier error de SQL
-        ex.printStackTrace();
-        JOptionPane.showMessageDialog(null, "Error al buscar productos por nombre.");
     }
-}
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -101,6 +98,7 @@ static final String DB_URL = "jdbc:mysql://localhost/proyecto";
     private void initComponents() {
 
         Panel2 = new javax.swing.JPanel();
+        Panel3 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
         TextFieldNombre = new javax.swing.JTextField();
@@ -110,13 +108,17 @@ static final String DB_URL = "jdbc:mysql://localhost/proyecto";
         jButton2 = new javax.swing.JButton();
         jButton4 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
+        jButton5 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         Panel2.setBackground(new java.awt.Color(255, 255, 255));
 
-        jLabel1.setText("Producto");
+        Panel3.setBackground(new java.awt.Color(255, 255, 255));
 
+        jLabel1.setText("PRODUCTO");
+
+        jButton1.setBackground(new java.awt.Color(255, 255, 255));
         jButton1.setText("MODIFICAR");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -132,19 +134,20 @@ static final String DB_URL = "jdbc:mysql://localhost/proyecto";
 
         jTable2.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null}
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
             },
             new String [] {
-                "Nombre_Producto", "Formato", "Localizacion"
+                "IdMaterial", "Subcategoria", "Descripcion", "Min_Stock"
             }
         ));
         jScrollPane2.setViewportView(jTable2);
 
         jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/istockphoto-1165295700-612x612.jpg"))); // NOI18N
 
+        jButton2.setBackground(new java.awt.Color(255, 255, 255));
         jButton2.setText("AGREGAR");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -152,6 +155,7 @@ static final String DB_URL = "jdbc:mysql://localhost/proyecto";
             }
         });
 
+        jButton4.setBackground(new java.awt.Color(255, 255, 255));
         jButton4.setText("ELIMINAR");
         jButton4.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -159,6 +163,7 @@ static final String DB_URL = "jdbc:mysql://localhost/proyecto";
             }
         });
 
+        jButton3.setBackground(new java.awt.Color(255, 255, 255));
         jButton3.setText("BUSCAR");
         jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -166,65 +171,90 @@ static final String DB_URL = "jdbc:mysql://localhost/proyecto";
             }
         });
 
-        javax.swing.GroupLayout Panel2Layout = new javax.swing.GroupLayout(Panel2);
-        Panel2.setLayout(Panel2Layout);
-        Panel2Layout.setHorizontalGroup(
-            Panel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(Panel2Layout.createSequentialGroup()
-                .addGap(61, 61, 61)
-                .addGroup(Panel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(Panel2Layout.createSequentialGroup()
-                        .addGroup(Panel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(Panel2Layout.createSequentialGroup()
-                                .addGap(6, 6, 6)
+        jButton5.setBackground(new java.awt.Color(255, 255, 255));
+        jButton5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/flechaatras.png"))); // NOI18N
+        jButton5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton5ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout Panel3Layout = new javax.swing.GroupLayout(Panel3);
+        Panel3.setLayout(Panel3Layout);
+        Panel3Layout.setHorizontalGroup(
+            Panel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Panel3Layout.createSequentialGroup()
+                .addContainerGap(56, Short.MAX_VALUE)
+                .addGroup(Panel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(Panel3Layout.createSequentialGroup()
+                        .addGroup(Panel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(Panel3Layout.createSequentialGroup()
+                                .addComponent(jButton5)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(jLabel1)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(TextFieldNombre, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(65, 65, 65)
-                                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(Panel2Layout.createSequentialGroup()
+                                .addGap(81, 81, 81))
+                            .addGroup(Panel3Layout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
                                 .addComponent(jButton1)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGap(52, 52, 52)
                                 .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                        .addGroup(Panel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(Panel3Layout.createSequentialGroup()
+                                .addComponent(TextFieldNombre, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(88, 88, 88))
+                            .addGroup(Panel3Layout.createSequentialGroup()
+                                .addGap(64, 64, 64)
                                 .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(jButton4)))
-                        .addGap(6, 6, 6))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 434, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(52, Short.MAX_VALUE))
+                                .addGap(49, 49, 49)
+                                .addComponent(jButton4)
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Panel3Layout.createSequentialGroup()
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 790, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(62, 62, 62))))
         );
-        Panel2Layout.setVerticalGroup(
-            Panel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(Panel2Layout.createSequentialGroup()
-                .addGroup(Panel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(Panel2Layout.createSequentialGroup()
-                        .addGap(39, 39, 39)
-                        .addGroup(Panel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+        Panel3Layout.setVerticalGroup(
+            Panel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(Panel3Layout.createSequentialGroup()
+                .addGroup(Panel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(Panel3Layout.createSequentialGroup()
+                        .addGap(38, 38, 38)
+                        .addGroup(Panel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(TextFieldNombre, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel1))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, Panel2Layout.createSequentialGroup()
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)))
-                .addGroup(Panel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel1)
+                            .addComponent(jButton5)))
+                    .addGroup(Panel3Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(18, 18, 18)
+                .addGroup(Panel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(39, 39, 39)
+                .addGap(40, 40, 40)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 323, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(45, 45, 45))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout Panel2Layout = new javax.swing.GroupLayout(Panel2);
+        Panel2.setLayout(Panel2Layout);
+        Panel2Layout.setHorizontalGroup(
+            Panel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(Panel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        Panel2Layout.setVerticalGroup(
+            Panel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(Panel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(0, 12, Short.MAX_VALUE)
-                .addComponent(Panel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addComponent(Panel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -233,6 +263,10 @@ static final String DB_URL = "jdbc:mysql://localhost/proyecto";
 
         pack();
     }// </editor-fold>                        
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {                                         
+        // TODO add your handling code here:
+    }                                        
 
     private void TextFieldNombreActionPerformed(java.awt.event.ActionEvent evt) {                                                
         // TODO add your handling code here:
@@ -246,13 +280,15 @@ static final String DB_URL = "jdbc:mysql://localhost/proyecto";
         // TODO add your handling code here:
     }                                        
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {                                         
-        // TODO add your handling code here:
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {                                         
+        String nombreMaterial = TextFieldNombre.getText(); // Obtener el nombre ingresado en el campo de texto
+        buscarProductosPorNombre(nombreMaterial);
     }                                        
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {                                         
-    String nombreProducto = TextFieldNombre.getText(); // Obtener el nombre ingresado en el campo de texto
-    buscarProductosPorNombre(nombreProducto);
+    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {                                         
+        EscogerProductos busquedaProductos = new EscogerProductos();
+        busquedaProductos.setVisible(true);
+        this.dispose();
     }                                        
 
     /**
@@ -292,11 +328,13 @@ static final String DB_URL = "jdbc:mysql://localhost/proyecto";
 
     // Variables declaration - do not modify                     
     private javax.swing.JPanel Panel2;
+    private javax.swing.JPanel Panel3;
     private javax.swing.JTextField TextFieldNombre;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
+    private javax.swing.JButton jButton5;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane2;
