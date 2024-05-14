@@ -19,7 +19,7 @@ VALUES(
 (17, 'Desatascador líquido', '1 L', 1, 'Almacen Auxiliar', 'Estantería'),
 (18, 'Jabón Líquido', NULL, 0, 'Almacen Auxiliar', 'Estantería'),
 (19, 'Amoniaco', '1,5 L', 3, 'Almacen Auxiliar', 'Estantería'),
-(20, 'Lejía',  '4 L', , 'Almacen Auxiliar', 'Estantería'),
+(20, 'Lejía',  '4 L', 0, 'Almacen Auxiliar', 'Estantería'),
 (21, 'Agua destilada', '1 L', 1, 'Almacen Auxiliar', 'Estantería'),
 (22, 'Botes de spray', NULL, 9, 'Almacen Auxiliar', 'Estantería'),
 (23, 'Cubos', NULL, 2, 'Almacen Auxiliar', 'Estantería'),
