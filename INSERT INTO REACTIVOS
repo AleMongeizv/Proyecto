@@ -470,7 +470,7 @@ VALUES (
 (468, 'Medio acetamida', '500 g', 3, 'Laboratorio 2', 'Armario 2', NULL,NULL),
 (469, 'Caldo Giolitti', '500 g', 1, 'Laboratorio 2', 'Armario 2', NULL,NULL),
 (470, 'Bacteriological', '500 g', 2, 'Laboratorio 2', 'Armario 2', NULL,NULL),
-(471, 'Malachite Oxale Green', '500 g', 1, 'Laboratorio 2', 'Armario 2', NULL,NULL),
+(471, 'Malachite Oxale Green', '500 g', 1, 'Laboratorio 2', 'Armario 2', NULL,NULL);
 
 
 
@@ -484,7 +484,7 @@ VALUES (1, 'comburente.png'),
 (7,'cancerigeno.png'),
 (8,'inflamable'),
 (9,'gases a presion.png'),
-(10,'riesgo biologico.png');
+(10,'riesgo biologico.png'),
 (11, 'atencion.png');
 
 
@@ -1085,8 +1085,4 @@ insert into REACTIVO_RIESGO (ID_REACTIVO, ID_REACTIVO) values
 (468,11),
 (469,11),
 (470,11),
-(471,11),
-
-
-
-
+(471,11);
